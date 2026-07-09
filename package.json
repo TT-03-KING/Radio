@@ -1,0 +1,34 @@
+{
+  "name": "tt-radio",
+  "version": "1.0.0",
+  "description": "TT-Radio 网络收音机",
+  "main": "main.js",
+  "author": "TT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.tt.radio",
+    "productName": "TT-Radio",
+    "icon": "icon.ico",
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "dependencies": {
+    "hls.js": "^1.6.16"
+  }
+}

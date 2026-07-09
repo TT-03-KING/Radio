@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+*.blockmap
+.DS_Store
+Thumbs.db
+1        # 忽略私钥文件
