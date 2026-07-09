@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TT-Radio v1.0</title>
+    <title>TT-Radio v1.1</title>
     <style>
         /* ===== CSS 变量 ===== */
         :root {
@@ -50,28 +50,48 @@
         body {
             font-family: 'Inter', 'PingFang SC', 'Segoe UI', system-ui, sans-serif;
             background: transparent !important;
-            min-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            padding: 20px 24px 24px 24px;
-            color: var(--text-primary);
+            justify-content: center;
+            padding: 0;
             margin: 0;
+            color: var(--text-primary);
             -webkit-app-region: no-drag;
         }
 
-        /* 标题栏 */
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--card-radius);
+            padding: 16px 24px 20px 24px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 30px 60px var(--shadow-color);
+            transition: background 0.3s, border 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            -webkit-app-region: drag;
+        }
+        .app-container * {
+            -webkit-app-region: no-drag;
+        }
+
         .titlebar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 980px;
-            padding: 6px 20px 2px 20px;
-            margin-bottom: 6px;
+            padding: 6px 0 2px 0;
+            margin-bottom: 4px;
             -webkit-app-region: drag;
             user-select: none;
-            z-index: 10;
             flex-shrink: 0;
             background: transparent;
         }
@@ -88,14 +108,8 @@
             align-items: center;
         }
         .titlebar-btn {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-            transition: 0.15s;
-            flex-shrink: 0;
+            width: 18px; height: 18px; border-radius: 50%; border: none; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25); transition: 0.15s; flex-shrink: 0;
         }
         .titlebar-btn:hover { transform: scale(1.15); }
         .titlebar-btn.minimize { background: #f1c40f; }
@@ -103,33 +117,19 @@
         .titlebar-btn.close { background: #e74c3c; }
         .titlebar-btn.maximized { background: #f39c12; }
 
-        /* 主容器 */
-        .app-container {
-            max-width: 980px;
-            width: 100%;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: var(--card-radius);
-            padding: 0 28px 20px 28px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 30px 60px var(--shadow-color);
-            transition: background 0.3s, border 0.3s, box-shadow 0.3s;
-            position: relative;
-            flex-grow: 1;
-            margin-top: 0;
-        }
-
         .app-toolbar, .player-main, .controls-row, .search-section, .list-container, .footer {
             background: transparent !important;
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
         }
 
         .app-toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            margin-top: 6px;
+            margin-bottom: 14px;
+            margin-top: 2px;
         }
         .app-toolbar .logo {
             font-size: 16px;
@@ -154,8 +154,7 @@
             background: var(--status-bg);
             border: 1px solid var(--card-border);
             color: var(--text-secondary);
-            width: 34px;
-            height: 34px;
+            width: 34px; height: 34px;
             border-radius: 50%;
             font-size: 15px;
             cursor: pointer;
@@ -180,12 +179,11 @@
             gap: 24px;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         .cover-wrapper {
             flex-shrink: 0;
-            width: 130px;
-            height: 130px;
+            width: 130px; height: 130px;
             border-radius: 24px;
             background: rgba(42,35,64,0.8);
             box-shadow: 0 12px 36px var(--shadow-color);
@@ -195,14 +193,12 @@
             transition: 0.3s;
         }
         .cover-wrapper img {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: cover;
             display: none;
         }
         .cover-wrapper .fallback-cover {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -256,7 +252,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 6px;
             padding: 3px 14px 3px 10px;
             border-radius: 30px;
             font-size: 12px;
@@ -271,8 +267,7 @@
             color: #6ee7b7;
         }
         .status-dot {
-            width: 7px;
-            height: 7px;
+            width: 7px; height: 7px;
             border-radius: 50%;
             background: #6b7280;
             display: inline-block;
@@ -288,18 +283,15 @@
             50% { opacity: 0.4; transform: scale(0.6); }
         }
 
-        /* 手动修正输入区域 */
         .manual-edit-area {
-            margin-top: 10px;
+            margin-top: 8px;
             display: none;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
             animation: fadeIn 0.3s ease;
         }
-        .manual-edit-area.visible {
-            display: flex;
-        }
+        .manual-edit-area.visible { display: flex; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-6px); }
             to { opacity: 1; transform: translateY(0); }
@@ -320,9 +312,7 @@
             border-color: rgba(79,172,254,0.5);
             background: var(--item-bg-hover);
         }
-        .manual-edit-area input[type="text"]::placeholder {
-            color: var(--text-muted);
-        }
+        .manual-edit-area input[type="text"]::placeholder { color: var(--text-muted); }
         .manual-edit-area .manual-edit-btn {
             background: var(--status-bg);
             border: 1px solid var(--card-border);
@@ -352,17 +342,16 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             flex-wrap: wrap;
             background: var(--status-bg);
-            padding: 6px 16px;
+            padding: 4px 16px;
             border-radius: 50px;
             border: 1px solid var(--card-border);
         }
 
         .btn-play {
-            width: 44px;
-            height: 44px;
+            width: 44px; height: 44px;
             border-radius: 50%;
             border: none;
             background: linear-gradient(135deg, #4facfe, #00f2fe);
@@ -379,13 +368,8 @@
         .btn-play.playing {
             box-shadow: 0 0 20px 8px var(--glow-color), 0 4px 12px rgba(0,0,0,0.2);
         }
-        .btn-play:hover {
-            transform: scale(1.08);
-            filter: brightness(1.15);
-        }
-        .btn-play:active {
-            transform: scale(0.95);
-        }
+        .btn-play:hover { transform: scale(1.08); filter: brightness(1.15); }
+        .btn-play:active { transform: scale(0.95); }
 
         .volume-wrap {
             display: flex;
@@ -407,16 +391,14 @@
         .volume-wrap input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 12px;
-            height: 12px;
+            width: 12px; height: 12px;
             border-radius: 50%;
             background: var(--text-primary);
             cursor: pointer;
             box-shadow: 0 2px 6px var(--shadow-color);
         }
         .volume-wrap input[type="range"]::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
+            width: 12px; height: 12px;
             border-radius: 50%;
             background: var(--text-primary);
             cursor: pointer;
@@ -465,8 +447,9 @@
         .list-container {
             max-height: 200px;
             overflow-y: auto;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             padding-right: 4px;
+            flex: 1;
         }
         .list-container::-webkit-scrollbar { width: 4px; }
         .list-container::-webkit-scrollbar-track { background: transparent; }
@@ -493,8 +476,7 @@
             border-color: var(--item-active-border);
         }
         .station-item .item-cover {
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             border-radius: 10px;
             flex-shrink: 0;
             overflow: hidden;
@@ -613,6 +595,7 @@
             font-weight: 400;
             opacity: 0.6;
         }
+        /* 透明度滑块 0~100 */
         .setting-group input[type="range"] {
             width: 100%;
             -webkit-appearance: none;
@@ -625,8 +608,7 @@
         .setting-group input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 14px;
-            height: 14px;
+            width: 14px; height: 14px;
             border-radius: 50%;
             background: var(--text-primary);
             cursor: pointer;
@@ -676,19 +658,19 @@
         .close-behavior-btn:hover { background: var(--item-bg-hover); }
 
         .footer {
-            margin-top: 14px;
+            margin-top: 12px;
             text-align: center;
             font-size: 11px;
             color: var(--text-muted);
             opacity: 0.5;
             letter-spacing: 0.5px;
             border-top: 1px solid var(--card-border);
-            padding-top: 12px;
+            padding-top: 10px;
+            flex-shrink: 0;
         }
 
         @media (max-width: 680px) {
-            body { padding: 12px; }
-            .app-container { padding: 0 16px 16px 16px; }
+            .app-container { padding: 12px 16px 16px 16px; }
             .cover-wrapper { width: 80px; height: 80px; border-radius: 18px; }
             .cover-wrapper .fallback-cover { font-size: 28px; }
             .now-info .station-name { font-size: 20px; }
@@ -702,21 +684,20 @@
 </head>
 <body>
 
-    <!-- 标题栏 -->
-    <div class="titlebar" id="titlebar">
-        <span class="titlebar-left">🎧 TT-Radio</span>
-        <div class="titlebar-right">
-            <button class="titlebar-btn minimize" id="winMinimize" title="最小化"></button>
-            <button class="titlebar-btn maximize" id="winMaximize" title="最大化"></button>
-            <button class="titlebar-btn close" id="winClose" title="关闭"></button>
-        </div>
-    </div>
-
-    <!-- 主容器 -->
     <div class="app-container" id="appContainer">
 
+        <!-- 标题栏 -->
+        <div class="titlebar" id="titlebar">
+            <span class="titlebar-left">🎧 TT-Radio</span>
+            <div class="titlebar-right">
+                <button class="titlebar-btn minimize" id="winMinimize" title="最小化"></button>
+                <button class="titlebar-btn maximize" id="winMaximize" title="最大化"></button>
+                <button class="titlebar-btn close" id="winClose" title="关闭"></button>
+            </div>
+        </div>
+
         <div class="app-toolbar">
-            <div class="logo">📻 TT-Radio <span>v1.0 · by TT</span></div>
+            <div class="logo">📻 TT-Radio <span>v1.1 · by TT</span></div>
             <div class="toolbar-actions">
                 <button class="icon-btn fav-toggle" id="favToggleBtn" title="显示收藏列表">❤️</button>
                 <button class="icon-btn" id="themeToggleBtn" title="切换主题">🌙</button>
@@ -736,7 +717,6 @@
                     <span class="status-dot"></span>
                     <span id="statusText">已停止</span>
                 </div>
-                <!-- 手动修正区域 -->
                 <div class="manual-edit-area" id="manualEditArea">
                     <input type="text" id="manualEditInput" placeholder="输入新的流地址..." />
                     <button class="manual-edit-btn" id="manualEditCancel">取消</button>
@@ -762,7 +742,7 @@
             <div class="empty-tip">⏳ 正在搜索湖南省电台...</div>
         </div>
 
-        <div class="footer">TT-Radio v1.0 · Designed by TT</div>
+        <div class="footer">TT-Radio v1.1 · Designed by TT</div>
     </div>
 
     <!-- 设置弹窗 -->
@@ -780,8 +760,8 @@
                 </div>
             </div>
             <div class="setting-group">
-                <label>🔲 背景透明度 <span class="value-hint" id="opacityHint">0.45</span></label>
-                <input type="range" id="opacitySlider" min="0.05" max="0.95" step="0.01" value="0.45">
+                <label>🔲 背景透明度 <span class="value-hint" id="opacityHint">45%</span></label>
+                <input type="range" id="opacitySlider" min="0" max="100" value="45" step="1">
             </div>
             <div class="glass-tip" style="font-size:11px; color:var(--text-muted); background:rgba(79,172,254,0.05); padding:6px 12px; border-radius:10px; margin-top:6px; border-left:2px solid #4facfe;">
                 💡 调节透明度即可看到桌面壁纸透出效果（需 Electron 透明窗口支持）。
@@ -798,7 +778,7 @@
         </div>
     </div>
 
-    <!-- 引入 hls.js 用于播放 m3u8 -->
+    <!-- 引入 hls.js -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@0.14.17/dist/hls.min.js"></script>
 
     <script>
@@ -809,7 +789,7 @@
             // 核心逻辑
             // ================================================================
             const audio = new Audio();
-            let hls = null; // hls 实例
+            let hls = null;
             let allStations = [];
             let filteredStations = [];
             let currentStation = null;
@@ -818,10 +798,8 @@
             const MAX_RETRIES = 6;
             let favorites = JSON.parse(localStorage.getItem('ttRadioFavorites') || '[]');
             let showFavoritesOnly = false;
-
             let urlFixMap = JSON.parse(localStorage.getItem('ttRadioUrlFixes') || '{}');
 
-            // DOM 引用
             const $ = id => document.getElementById(id);
             const coverWrapper = $('coverWrapper');
             const coverImg = $('coverImg');
@@ -849,7 +827,6 @@
             const manualEditApply = $('manualEditApply');
             const manualEditCancel = $('manualEditCancel');
 
-            // 兜底电台
             const FALLBACK_STATIONS = [
                 { name: '湖南交通频道', freq: 'FM91.8', url: 'http://live.hnradio.com/hnjt.m3u8', favicon: '' },
                 { name: '金鹰955电台', freq: 'FM95.5', url: 'http://live.hnradio.com/jy955.m3u8', favicon: '' },
@@ -864,29 +841,20 @@
                 return urlFixMap[originalUrl] || originalUrl;
             }
 
-            // ---- 收藏管理 ----
             function toggleFavorite(station) {
                 if (!station) return;
                 const url = station.url;
                 const index = favorites.indexOf(url);
-                if (index > -1) {
-                    favorites.splice(index, 1);
-                } else {
-                    favorites.push(url);
-                }
+                if (index > -1) { favorites.splice(index, 1); } else { favorites.push(url); }
                 localStorage.setItem('ttRadioFavorites', JSON.stringify(favorites));
                 renderStations(getCurrentList());
             }
 
-            function isFavorited(url) {
-                return favorites.includes(url);
-            }
+            function isFavorited(url) { return favorites.includes(url); }
 
             function getCurrentList() {
                 let list = filteredStations;
-                if (showFavoritesOnly) {
-                    list = list.filter(s => isFavorited(s.url));
-                }
+                if (showFavoritesOnly) { list = list.filter(s => isFavorited(s.url)); }
                 const sorted = [...list];
                 sorted.sort((a, b) => {
                     const aFav = isFavorited(a.url);
@@ -903,7 +871,6 @@
                     stationListEl.innerHTML = `<div class="empty-tip">😔 ${showFavoritesOnly ? '暂无收藏电台' : '没有找到电台，试试其他关键词'}</div>`;
                     return;
                 }
-
                 let html = '';
                 list.forEach((s, index) => {
                     const isActive = currentStation && (s.url === currentStation.url);
@@ -941,7 +908,6 @@
                         if (station) playStation(station);
                     });
                 });
-
                 stationListEl.querySelectorAll('.fav-btn').forEach(btn => {
                     btn.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -952,11 +918,9 @@
                 });
             }
 
-            // ---- 显示/隐藏手动编辑 ----
             function showManualEdit(station) {
                 if (!station) return;
-                const currentUrl = getFixedUrl(station.url);
-                manualEditInput.value = currentUrl;
+                manualEditInput.value = getFixedUrl(station.url);
                 manualEditArea.classList.add('visible');
                 manualEditInput.focus();
                 manualEditInput.select();
@@ -973,27 +937,18 @@
                 const originalUrl = manualEditArea.dataset.editingUrl;
                 if (!originalUrl) return;
                 const newUrl = manualEditInput.value.trim();
-                if (!newUrl) {
-                    updateStatus('⚠️ 地址不能为空');
-                    return;
-                }
+                if (!newUrl) { updateStatus('⚠️ 地址不能为空'); return; }
                 urlFixMap[originalUrl] = newUrl;
                 localStorage.setItem('ttRadioUrlFixes', JSON.stringify(urlFixMap));
-
-                if (currentStation && currentStation.url === originalUrl) {
-                    currentStation.url = newUrl;
-                }
+                if (currentStation && currentStation.url === originalUrl) { currentStation.url = newUrl; }
                 const target = allStations.find(s => s.url === originalUrl);
-                if (target) {
-                    target.url = newUrl;
-                }
+                if (target) { target.url = newUrl; }
                 hideManualEdit();
                 retryCount = 0;
                 updateStatus('🔄 使用新地址重试...');
                 attemptPlay(currentStation || target);
             }
 
-            // ---- 播放错误处理（含重试） ----
             function handlePlayError(err, station) {
                 let reason = '未知错误';
                 if (err.message) reason = err.message;
@@ -1009,9 +964,7 @@
                 if (retryCount < MAX_RETRIES) {
                     retryCount++;
                     updateStatus(`⏳ 重试 ${retryCount}/${MAX_RETRIES}... (${reason})`);
-                    setTimeout(() => {
-                        attemptPlay(station);
-                    }, 1500);
+                    setTimeout(() => { attemptPlay(station); }, 1500);
                 } else {
                     isPlaying = false;
                     updateUI();
@@ -1020,31 +973,18 @@
                 }
             }
 
-            // ---- 核心播放函数（支持 HLS 和直链） ----
             function attemptPlay(station) {
-                if (!station || !station.url) {
-                    updateStatus('❌ 地址无效');
-                    return;
-                }
+                if (!station || !station.url) { updateStatus('❌ 地址无效'); return; }
                 let playUrl = getFixedUrl(station.url);
-                if (playUrl !== station.url) {
-                    station.url = playUrl;
-                }
+                if (playUrl !== station.url) { station.url = playUrl; }
+                if (hls) { hls.destroy();
+                    hls = null; }
 
-                // 如果之前有 hls 实例，销毁
-                if (hls) {
-                    hls.destroy();
-                    hls = null;
-                }
-
-                // 判断是否为 HLS 流 (.m3u8)
                 const isHls = playUrl.includes('.m3u8');
 
                 if (isHls && typeof Hls !== 'undefined') {
-                    // ---- 使用 hls.js 播放 ----
                     hls = new Hls({
                         xhrSetup: function(xhr, url) {
-                            // 对 ajmide.com 等站点添加防盗链头
                             if (url.includes('ajmide.com') || url.includes('rscdn-bk')) {
                                 xhr.setRequestHeader('Referer', 'https://www.ajmide.com/');
                                 xhr.setRequestHeader('Origin', 'https://www.ajmide.com/');
@@ -1056,32 +996,20 @@
                         enableWorker: true,
                         lowLatencyMode: true,
                     });
-
                     hls.loadSource(playUrl);
                     hls.attachMedia(audio);
-
                     hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                        audio.play()
-                            .then(() => {
-                                isPlaying = true;
-                                hideManualEdit();
-                                updateUI();
-                                updateStatus('📡 正在播放 (HLS)');
-                            })
-                            .catch(err => {
-                                console.warn('HLS 播放启动失败:', err);
-                                handlePlayError(err, station);
-                            });
+                        audio.play().then(() => {
+                            isPlaying = true;
+                            hideManualEdit();
+                            updateUI();
+                            updateStatus('📡 正在播放 (HLS)');
+                        }).catch(err => { handlePlayError(err, station); });
                     });
-
                     hls.on(Hls.Events.ERROR, function(event, data) {
-                        if (data.fatal) {
-                            console.error('HLS 致命错误:', data);
-                            handlePlayError(new Error('HLS 流错误'), station);
-                        }
+                        if (data.fatal) { handlePlayError(new Error('HLS 流错误'), station); }
                     });
                 } else {
-                    // ---- 使用原生 audio 播放（直链） ----
                     audio.src = playUrl;
                     audio.load();
                     const playPromise = audio.play();
@@ -1091,9 +1019,7 @@
                             hideManualEdit();
                             updateUI();
                             updateStatus('📡 正在播放');
-                        }).catch(err => {
-                            handlePlayError(err, station);
-                        });
+                        }).catch(err => { handlePlayError(err, station); });
                     } else {
                         audio.play();
                         isPlaying = true;
@@ -1102,26 +1028,14 @@
                         updateStatus('📡 正在播放');
                     }
                 }
-
                 updateCover(station);
                 updateUI();
             }
 
-            // ---- 播放入口 ----
             function playStation(station) {
-                if (!station || !station.url) {
-                    updateStatus('❌ 地址无效');
-                    return;
-                }
-                if (currentStation && currentStation.url === station.url && isPlaying) {
-                    togglePlayPause();
-                    return;
-                }
-                if (currentStation && currentStation.url === station.url && !isPlaying) {
-                    togglePlayPause();
-                    return;
-                }
-
+                if (!station || !station.url) { updateStatus('❌ 地址无效'); return; }
+                if (currentStation && currentStation.url === station.url && isPlaying) { togglePlayPause(); return; }
+                if (currentStation && currentStation.url === station.url && !isPlaying) { togglePlayPause(); return; }
                 currentStation = station;
                 retryCount = 0;
                 hideManualEdit();
@@ -1130,11 +1044,7 @@
             }
 
             function togglePlayPause() {
-                if (!currentStation) {
-                    const list = getCurrentList();
-                    if (list.length > 0) { playStation(list[0]); }
-                    return;
-                }
+                if (!currentStation) { const list = getCurrentList(); if (list.length > 0) { playStation(list[0]); } return; }
                 if (isPlaying) {
                     audio.pause();
                     isPlaying = false;
@@ -1143,15 +1053,8 @@
                 } else {
                     updateStatus('⏳ 恢复中...');
                     const playUrl = getFixedUrl(currentStation.url);
-                    if (playUrl !== currentStation.url) {
-                        currentStation.url = playUrl;
-                    }
-                    // 如果当前使用 hls，需要重新初始化
-                    if (hls) {
-                        // 简单处理：重新调用 attemptPlay
-                        attemptPlay(currentStation);
-                        return;
-                    }
+                    if (playUrl !== currentStation.url) { currentStation.url = playUrl; }
+                    if (hls) { attemptPlay(currentStation); return; }
                     if (!audio.src || audio.src !== currentStation.url || audio.readyState < 2) {
                         audio.src = currentStation.url;
                         audio.load();
@@ -1179,12 +1082,7 @@
             }
 
             function updateUI() {
-                if (isPlaying) {
-                    playBtn.classList.add('playing');
-                } else {
-                    playBtn.classList.remove('playing');
-                }
-
+                if (isPlaying) { playBtn.classList.add('playing'); } else { playBtn.classList.remove('playing'); }
                 if (currentStation) {
                     currentName.textContent = currentStation.name || '手动输入';
                     currentFreq.textContent = currentStation.freq || '';
@@ -1233,9 +1131,7 @@
                 }
             }
 
-            function updateStatus(text) {
-                if (statusText) statusText.textContent = text;
-            }
+            function updateStatus(text) { if (statusText) statusText.textContent = text; }
 
             function filterStations(kw) {
                 const key = kw.trim().toLowerCase();
@@ -1249,7 +1145,6 @@
                 updateUI();
             }
 
-            // ---- 拉取 API ----
             async function fetchStations() {
                 stationListEl.innerHTML = `<div class="empty-tip">⏳ 正在从数据库搜索...</div>`;
                 try {
@@ -1284,7 +1179,8 @@
                         }
                     }
                     useFallback();
-                } catch (e) { console.warn('API失败，使用兜底', e); useFallback(); }
+                } catch (e) { console.warn('API失败，使用兜底', e);
+                    useFallback(); }
             }
 
             function useFallback() {
@@ -1295,7 +1191,6 @@
                 else updateUI();
             }
 
-            // ---- 收藏视图切换 ----
             function toggleFavView() {
                 showFavoritesOnly = !showFavoritesOnly;
                 favToggleBtn.classList.toggle('active', showFavoritesOnly);
@@ -1303,28 +1198,45 @@
                 updateUI();
             }
 
-            // ---- 设置 / 主题 / 透明度 ----
             function openSettings() { settingsOverlay.classList.add('open'); }
+
             function closeSettings() { settingsOverlay.classList.remove('open'); }
 
             function setTheme(theme) {
                 document.documentElement.setAttribute('data-theme', theme);
-                themeBtns.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.theme === theme);
-                });
+                themeBtns.forEach(btn => { btn.classList.toggle('active', btn.dataset.theme === theme); });
                 themeHint.textContent = theme === 'dark' ? '暗色' : '亮色';
                 themeToggleBtn.textContent = theme === 'dark' ? '🌙' : '☀️';
                 localStorage.setItem('radio-theme', theme);
             }
 
+            // ================================================================
+            // 透明度 0~100% 控制
+            // ================================================================
             function applyOpacity() {
-                const opacity = parseFloat(opacitySlider.value);
+                const val = parseInt(opacitySlider.value, 10); // 0~100
+                const opacity = val / 100; // 0~1
                 document.documentElement.style.setProperty('--bg-opacity', opacity);
-                opacityHint.textContent = opacity.toFixed(2);
-                localStorage.setItem('radio-opacity', opacity);
+                opacityHint.textContent = val + '%';
+                localStorage.setItem('radio-opacity', val);
             }
 
-            // ---- Electron 标题栏控制 ----
+            // 初始化透明度
+            const savedOpacity = localStorage.getItem('radio-opacity');
+            if (savedOpacity !== null) {
+                const val = parseInt(savedOpacity, 10);
+                opacitySlider.value = val;
+            } else {
+                opacitySlider.value = 45; // 默认45%
+            }
+            applyOpacity();
+
+            // 监听滑块变化
+            opacitySlider.addEventListener('input', applyOpacity);
+
+            // ================================================================
+            // Electron 标题栏控制
+            // ================================================================
             let isElectron = false;
             try {
                 isElectron = !!(window && window.electronAPI && typeof window.electronAPI.minimize === 'function');
@@ -1340,13 +1252,9 @@
 
                 if (typeof window.electronAPI.onMaximized === 'function') {
                     window.electronAPI.onMaximized((event, isMax) => {
-                        if (isMax) {
-                            winMaxBtn.classList.add('maximized');
-                            winMaxBtn.title = '还原';
-                        } else {
-                            winMaxBtn.classList.remove('maximized');
-                            winMaxBtn.title = '最大化';
-                        }
+                        if (isMax) { winMaxBtn.classList.add('maximized');
+                            winMaxBtn.title = '还原'; } else { winMaxBtn.classList.remove('maximized');
+                            winMaxBtn.title = '最大化'; }
                     });
                 }
 
@@ -1396,10 +1304,8 @@
             });
             manualEditInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') applyManualFix();
-                if (e.key === 'Escape') {
-                    hideManualEdit();
-                    updateStatus('⏹ 已取消手动修正');
-                }
+                if (e.key === 'Escape') { hideManualEdit();
+                    updateStatus('⏹ 已取消手动修正'); }
             });
 
             themeToggleBtn.addEventListener('click', function() {
@@ -1409,35 +1315,28 @@
             themeBtns.forEach(btn => {
                 btn.addEventListener('click', function() { setTheme(this.dataset.theme); });
             });
-            opacitySlider.addEventListener('input', applyOpacity);
 
             document.addEventListener('keydown', (e) => {
                 if (e.target.tagName === 'INPUT') return;
-                if (e.code === 'Space') { e.preventDefault(); togglePlayPause(); }
+                if (e.code === 'Space') { e.preventDefault();
+                    togglePlayPause(); }
                 if (e.key === 'Escape') closeSettings();
             });
 
             audio.addEventListener('error', function() {
-                if (isPlaying) {
-                    isPlaying = false;
+                if (isPlaying) { isPlaying = false;
                     updateUI();
-                    updateStatus('⚠️ 播放出错');
-                }
+                    updateStatus('⚠️ 播放出错'); }
             });
             audio.addEventListener('ended', function() {
-                if (isPlaying) {
-                    isPlaying = false;
+                if (isPlaying) { isPlaying = false;
                     updateUI();
-                    updateStatus('⏸ 已停止');
-                }
+                    updateStatus('⏸ 已停止'); }
             });
 
             // ---- 初始化 ----
             const savedTheme = localStorage.getItem('radio-theme') || 'dark';
             setTheme(savedTheme);
-            const savedOpacity = localStorage.getItem('radio-opacity');
-            if (savedOpacity) { opacitySlider.value = savedOpacity; opacityHint.textContent = parseFloat(savedOpacity).toFixed(2); }
-            applyOpacity();
             fetchStations();
 
         })();

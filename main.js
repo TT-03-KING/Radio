@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, session, Tray, Menu, nativeImage, dialog } = require('electron');
 const path = require('path');
 
 let mainWindow = null;
@@ -7,42 +7,48 @@ let closeBehavior = 'ask';
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 1000,
-        height: 780,
+        width: 1066,                 // 16:9 比例 (1066x600)
+        height: 600,
         transparent: true,
         frame: false,
         backgroundColor: '#00000000',
         resizable: true,
+        // ★ 限制宽高比为 16:9
+        aspectRatio: 16 / 9,
+        // ★ 设置最小尺寸（防止缩得过小）
+        minWidth: 800,
+        minHeight: 450,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js'),
-            // ★ 关键：允许自动播放（无需用户手势）
             autoplayPolicy: 'no-user-gesture-required',
         }
     });
 
-    // ★ 拦截请求，添加 Referer 头（针对 ajmide.com 等防盗链站点）
+    // 添加请求头（防盗链等）
     session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
         const url = details.url;
-        // 对包含特定域名的请求添加 Referer
-        if (url.includes('ajmide.com') || url.includes('rscdn-bk') || url.includes('live.hnradio.com')) {
+        if (url.includes('live.hnradio.com') || url.includes('ajmide.com') || url.includes('rscdn-bk')) {
             details.requestHeaders['Referer'] = 'https://www.ajmide.com/';
             details.requestHeaders['Origin'] = 'https://www.ajmide.com/';
-            details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+            details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
         }
         callback({ requestHeaders: details.requestHeaders });
     });
 
     mainWindow.loadFile('index.html');
-    // 调试用（如需打开，取消注释）
     // mainWindow.webContents.openDevTools();
 
     mainWindow.on('maximize', () => {
-        mainWindow.webContents.send('window-maximized', true);
+        if (mainWindow) {
+            mainWindow.webContents.send('window-maximized', true);
+        }
     });
     mainWindow.on('unmaximize', () => {
-        mainWindow.webContents.send('window-maximized', false);
+        if (mainWindow) {
+            mainWindow.webContents.send('window-maximized', false);
+        }
     });
 
     mainWindow.on('close', (event) => {
@@ -53,8 +59,6 @@ function createWindow() {
             return;
         }
         event.preventDefault();
-        // 询问逻辑（同之前）
-        const { dialog } = require('electron');
         dialog.showMessageBox(mainWindow, {
             type: 'question',
             buttons: ['退出程序', '最小化到托盘', '取消'],
@@ -71,7 +75,9 @@ function createWindow() {
             } else if (result.response === 1) {
                 closeBehavior = 'tray';
                 mainWindow.hide();
-                mainWindow.webContents.send('close-behavior-updated', 'tray');
+                if (mainWindow) {
+                    mainWindow.webContents.send('close-behavior-updated', 'tray');
+                }
             }
         });
     });
@@ -81,10 +87,32 @@ function createWindow() {
 }
 
 function createTray() {
-    // 同之前，略...
+    let iconPath = path.join(__dirname, 'icon.ico');
+    let trayIcon;
+    try {
+        trayIcon = nativeImage.createFromPath(iconPath);
+        if (trayIcon.isEmpty()) throw new Error('Icon not found');
+    } catch (e) {
+        trayIcon = nativeImage.createEmpty();
+        console.warn('未找到 icon.ico');
+    }
+    tray = new Tray(trayIcon);
+    const contextMenu = Menu.buildFromTemplate([
+        { label: '显示 TT-Radio', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
+        { type: 'separator' },
+        { label: '关闭时询问', click: () => { closeBehavior = 'ask'; if (mainWindow) mainWindow.webContents.send('close-behavior-updated', 'ask'); } },
+        { label: '直接退出程序', click: () => { closeBehavior = 'exit'; } },
+        { label: '最小化到托盘', click: () => { closeBehavior = 'tray'; if (mainWindow) mainWindow.hide(); } },
+        { type: 'separator' },
+        { label: '退出 TT-Radio', click: () => { app.quit(); } }
+    ]);
+    tray.setToolTip('TT-Radio 正在播放');
+    tray.setContextMenu(contextMenu);
+    tray.on('double-click', () => {
+        if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+    });
 }
 
-// IPC 监听（同之前）
 ipcMain.on('window-minimize', () => { if (mainWindow) mainWindow.minimize(); });
 ipcMain.on('window-maximize', () => {
     if (mainWindow) {
@@ -95,7 +123,9 @@ ipcMain.on('window-maximize', () => {
 ipcMain.on('window-close', () => { if (mainWindow) mainWindow.close(); });
 ipcMain.on('set-close-behavior', (event, mode) => {
     closeBehavior = mode;
-    mainWindow.webContents.send('close-behavior-updated', mode);
+    if (mainWindow) {
+        mainWindow.webContents.send('close-behavior-updated', mode);
+    }
 });
 
 app.whenReady().then(createWindow);
